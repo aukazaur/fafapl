@@ -12,9 +12,9 @@ SITE="$HERE/site"
 TMP="$HERE/.build"
 LOVEJS="$HERE/.lovejs/node_modules/love.js"
 
-# katalog_gry|tytuł
+# katalog_gry|tytuł|sterowanie dotykowe (touch = joystick i przycisk skoku na telefonie)
 GAMES=(
-  "crystal_collector|Crystal Collector"
+  "crystal_collector|Crystal Collector|touch"
   "dungeon_escape|Dungeon Escape"
   "zapomniane_krolestwo|Zapomniane Królestwo"
   "zelazne_imperium|Żelazne Imperium"
@@ -32,8 +32,7 @@ mkdir -p "$TMP" "$SITE/games" "$SITE/engine"
 cp "$LOVEJS/src/compat/love.js" "$LOVEJS/src/compat/love.wasm" "$SITE/engine/"
 
 for entry in "${GAMES[@]}"; do
-  dir="${entry%%|*}"
-  title="${entry#*|}"
+  IFS='|' read -r dir title touch <<< "$entry"
   id="$(echo "$dir" | tr 'A-Z' 'a-z')"
   echo ">> $title"
 
@@ -50,10 +49,12 @@ for entry in "${GAMES[@]}"; do
 
   mkdir -p "$SITE/games/$id"
   cp "$TMP/$id-out/game.js" "$TMP/$id-out/game.data" "$SITE/games/$id/"
-  sed "s|{{TITLE}}|$title|g" "$HERE/player.html" > "$SITE/games/$id/index.html"
+  touchtag=""
+  [ "$touch" = "touch" ] && touchtag='<script src="../../touch.js"></script>'
+  sed -e "s|{{TITLE}}|$title|g" -e "s|{{TOUCH}}|$touchtag|" "$HERE/player.html" > "$SITE/games/$id/index.html"
 done
 
-cp "$HERE/index.html" "$HERE/play.html" "$SITE/"
+cp "$HERE/index.html" "$HERE/play.html" "$HERE/touch.js" "$SITE/"
 cp -r "$HERE/thumbs" "$SITE/"
 touch "$SITE/.nojekyll"  # GitHub Pages: serwuj pliki bez przetwarzania
 
