@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dungeon Escape · FafaPl</title>
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; }
+    #canvas { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+              visibility: hidden; image-rendering: pixelated; outline: none; }
+    #status { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+              color: #ffd34d; font: 600 20px system-ui, sans-serif; }
+  </style>
+</head>
+<body>
+  <div id="status">Ładowanie…</div>
+  <canvas id="canvas" tabindex="0" oncontextmenu="event.preventDefault()"></canvas>
+  <script>
+    var canvas = document.getElementById('canvas');
+    var statusEl = document.getElementById('status');
+
+    // Dopasuj obraz gry do okna, zachowując proporcje.
+    function fit() {
+      if (!canvas.width || !canvas.height) return;
+      var s = Math.min(innerWidth / canvas.width, innerHeight / canvas.height);
+      canvas.style.width = Math.floor(canvas.width * s) + 'px';
+      canvas.style.height = Math.floor(canvas.height * s) + 'px';
+    }
+    addEventListener('resize', fit);
+    new MutationObserver(fit).observe(canvas, { attributes: true, attributeFilter: ['width', 'height'] });
+
+    addEventListener('keydown', function (e) {
+      if ([32, 37, 38, 39, 40, 9].indexOf(e.keyCode) > -1) e.preventDefault();
+    });
+    addEventListener('click', function () { canvas.focus(); });
+
+    var Module = {
+      arguments: ['./game.love'],
+      INITIAL_MEMORY: 134217728,
+      canvas: canvas,
+      printErr: console.error.bind(console),
+      locateFile: function (path) { return /\.wasm$/.test(path) ? '../../engine/' + path : path; },
+      setStatus: function (text) {
+        if (text) { statusEl.textContent = text.indexOf('Exception') === 0 ? 'Błąd gry 😢' : 'Ładowanie…'; }
+        else if (Module.remainingDependencies === 0) {
+          statusEl.style.display = 'none';
+          canvas.style.visibility = 'visible';
+          canvas.focus();
+          fit();
+        }
+      },
+      totalDependencies: 0,
+      remainingDependencies: 0,
+      monitorRunDependencies: function (left) {
+        this.remainingDependencies = left;
+        this.totalDependencies = Math.max(this.totalDependencies, left);
+        Module.setStatus(left ? 'Ładowanie…' : '');
+      }
+    };
+    window.onerror = function () { statusEl.style.display = 'flex'; statusEl.textContent = 'Błąd gry 😢 — odśwież stronę'; };
+  </script>
+  <script src="game.js"></script>
+  <script async src="../../engine/love.js" onload="Love(Module)"></script>
+</body>
+</html>

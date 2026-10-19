@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FafaPl</title>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@700;800&display=swap" rel="stylesheet">
+  <style>
+    html, body { margin: 0; height: 100%; background: #000; color: #f2eefe; font-family: Nunito, system-ui, sans-serif; }
+    body { display: flex; flex-direction: column; }
+    nav { display: flex; align-items: center; gap: 16px; padding: 8px 16px; background: #12101f; border-bottom: 2px solid #3a3460; }
+    .logo { font-family: 'Press Start 2P', monospace; font-size: 16px; color: #ffd34d; text-decoration: none; text-shadow: 2px 2px 0 #ff5fa2; }
+    .logo span { color: #4de1ff; }
+    #title { font-weight: 800; font-size: 18px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    button { font: inherit; font-weight: 800; color: #12101f; background: #ffd34d; border: 0; border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+    button:hover { background: #ffe28a; }
+    iframe { flex: 1; width: 100%; border: 0; display: block; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a class="logo" href="./">Fafa<span>Pl</span></a>
+    <div id="title"></div>
+    <button id="fs">⛶ Pełny ekran</button>
+  </nav>
+  <iframe id="game" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
+  <script>
+    var TITLES = {
+      crystal_collector: 'Crystal Collector',
+      dungeon_escape: 'Dungeon Escape',
+      zapomniane_krolestwo: 'Zapomniane Królestwo',
+      zelazne_imperium: 'Żelazne Imperium',
+      krolestwogiganta: 'Królestwo na Grzbiecie Giganta'
+    };
+    var id = new URLSearchParams(location.search).get('gra');
+    if (!TITLES[id]) location.replace('./');
+    document.title = TITLES[id] + ' · FafaPl';
+    document.getElementById('title').textContent = TITLES[id];
+    var frame = document.getElementById('game');
+    frame.src = 'games/' + id + '/';
+    frame.addEventListener('load', function () { frame.focus(); });
+    document.getElementById('fs').onclick = function () {
+      (frame.requestFullscreen || frame.webkitRequestFullscreen).call(frame);
+      frame.focus();
+    };
+  </script>
+</body>
+</html>

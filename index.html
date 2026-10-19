@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FafaPl — nasze gry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #12101f; --bg2: #1c1930; --card: #231f3b; --line: #3a3460;
+      --text: #f2eefe; --muted: #a9a2c9; --gold: #ffd34d; --pink: #ff5fa2; --cyan: #4de1ff;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; color: var(--text); font-family: Nunito, system-ui, sans-serif;
+      background: radial-gradient(ellipse at top, #2b2056 0%, var(--bg) 60%) fixed, var(--bg);
+    }
+    header { text-align: center; padding: 56px 16px 24px; }
+    .logo {
+      font-family: 'Press Start 2P', monospace; font-size: clamp(40px, 9vw, 84px); margin: 0; letter-spacing: 2px;
+      color: var(--gold); text-shadow: 4px 4px 0 var(--pink), 8px 8px 0 #000;
+    }
+    .logo span { color: var(--cyan); }
+    .tagline { color: var(--muted); font-size: 18px; margin: 22px 0 0; }
+    main { max-width: 1180px; margin: 0 auto; padding: 24px 16px 64px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+    .card {
+      display: flex; flex-direction: column; background: var(--card); border: 2px solid var(--line);
+      border-radius: 14px; overflow: hidden; text-decoration: none; color: inherit;
+      transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+    }
+    .card:hover, .card:focus-visible { transform: translateY(-4px); border-color: var(--gold); box-shadow: 0 10px 30px #0008; outline: none; }
+    .thumb { position: relative; aspect-ratio: 16 / 9; background: #000; overflow: hidden; }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; image-rendering: pixelated; display: block; }
+    .play {
+      position: absolute; inset: 0; display: grid; place-items: center; background: #0007; opacity: 0;
+      transition: opacity .15s ease; font-family: 'Press Start 2P', monospace; font-size: 16px; color: var(--gold);
+    }
+    .card:hover .play, .card:focus-visible .play { opacity: 1; }
+    .body { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+    .tag { align-self: flex-start; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
+           padding: 3px 9px; border-radius: 99px; background: var(--bg2); color: var(--cyan); }
+    h2 { margin: 2px 0 0; font-size: 22px; }
+    .desc { margin: 0; color: var(--muted); line-height: 1.45; }
+    .keys { margin-top: auto; padding-top: 8px; font-size: 13px; color: var(--muted); }
+    kbd { font-family: inherit; font-weight: 700; color: var(--text); background: var(--bg2); border: 1px solid var(--line);
+          border-bottom-width: 3px; border-radius: 5px; padding: 0 6px; }
+    footer { text-align: center; color: var(--muted); font-size: 14px; padding: 0 16px 40px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1 class="logo">Fafa<span>Pl</span></h1>
+    <p class="tagline">Gry, które zrobiliśmy sami. Wybierz jedną i graj w przeglądarce!</p>
+  </header>
+  <main>
+    <div class="grid" id="games"></div>
+  </main>
+  <footer>Zrobione w LÖVE · działa w przeglądarce dzięki love.js</footer>
+
+  <script>
+    var GAMES = [
+      { id: 'crystal_collector', title: 'Crystal Collector', tag: 'Platformówka',
+        desc: 'Zbierz 10 kryształów na każdym z 10 poziomów. Skacz wrogom na głowy, ale uważaj na kolczaki i bossów.',
+        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>Enter</kbd> start' },
+      { id: 'dungeon_escape', title: 'Dungeon Escape', tag: 'Platformówka',
+        desc: 'Uciekaj z lochu! Znajdź trzy klucze ukryte w otwartym świecie, unikaj pułapek i otwórz wielką bramę.',
+        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>M</kbd> mapa' },
+      { id: 'zapomniane_krolestwo', title: 'Zapomniane Królestwo', tag: 'Przygoda akcji',
+        desc: 'Przemierz ruiny dawnego królestwa, walcz mieczem z potworami, odkrywaj sekrety i pokonaj Upadłego Króla.',
+        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>J</kbd> miecz' },
+      { id: 'zelazne_imperium', title: 'Żelazne Imperium', tag: 'Strategia RTS',
+        desc: 'Królestwo Świtu kontra Czerwony Legion. Zbieraj surowce, buduj osadę, szkol armię i pokonaj wroga.',
+        keys: 'Mysz · <kbd>F1</kbd> pomoc i sterowanie' },
+      { id: 'krolestwogiganta', title: 'Królestwo na Grzbiecie Giganta', tag: 'Budowanie',
+        desc: 'Zbuduj osadę na plecach wędrującego giganta, broń jej przed napadami i wyruszaj na wyprawy do ruin.',
+        keys: 'Mysz · <kbd>1</kbd>–<kbd>5</kbd> budynki · <kbd>H</kbd> pomoc' }
+    ];
+
+    document.getElementById('games').innerHTML = GAMES.map(function (g) {
+      return '<a class="card" href="play.html?gra=' + g.id + '">' +
+        '<div class="thumb"><img src="thumbs/' + g.id + '.jpg" alt="" loading="lazy"><div class="play">▶ GRAJ</div></div>' +
+        '<div class="body"><span class="tag">' + g.tag + '</span><h2>' + g.title + '</h2>' +
+        '<p class="desc">' + g.desc + '</p><div class="keys">' + g.keys + '</div></div></a>';
+    }).join('');
+  </script>
+</body>
+</html>
