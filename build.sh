@@ -12,14 +12,15 @@ SITE="$HERE/site"
 TMP="$HERE/.build"
 LOVEJS="$HERE/.lovejs/node_modules/love.js"
 
-# katalog_gry|tytuł|sterowanie dotykowe (touch = przyciski na telefonie, układ w touch.js)
+# katalog_gry|tytuł|dodatki po przecinku: touch = przyciski na telefonie (układ w touch.js),
+#                     net = gra przez sieć przez WebRTC (fafanet.js + web/<katalog>.lua)
 GAMES=(
   "crystal_collector|Crystal Collector|touch"
   "dungeon_escape|Dungeon Escape|touch"
   "zapomniane_krolestwo|Zapomniane Królestwo|touch"
   "zelazne_imperium|Żelazne Imperium"
   "KrolestwoGiganta|Królestwo na Grzbiecie Giganta"
-  "steal_a_squishy|Steal a Squishy"
+  "steal_a_squishy|Steal a Squishy|net"
 )
 
 if [ ! -d "$LOVEJS" ]; then
@@ -33,7 +34,7 @@ mkdir -p "$TMP" "$SITE/games" "$SITE/engine"
 cp "$LOVEJS/src/compat/love.js" "$LOVEJS/src/compat/love.wasm" "$SITE/engine/"
 
 for entry in "${GAMES[@]}"; do
-  IFS='|' read -r dir title touch <<< "$entry"
+  IFS='|' read -r dir title extras <<< "$entry"
   id="$(echo "$dir" | tr 'A-Z' 'a-z')"
   echo ">> $title"
 
@@ -53,12 +54,13 @@ for entry in "${GAMES[@]}"; do
 
   mkdir -p "$SITE/games/$id"
   cp "$TMP/$id-out/game.js" "$TMP/$id-out/game.data" "$SITE/games/$id/"
-  touchtag=""
-  [ "$touch" = "touch" ] && touchtag='<script src="../../touch.js"></script>'
-  sed -e "s|{{TITLE}}|$title|g" -e "s|{{TOUCH}}|$touchtag|" "$HERE/player.html" > "$SITE/games/$id/index.html"
+  extra=""
+  case ",$extras," in *,touch,*) extra+='<script src="../../touch.js"></script>' ;; esac
+  case ",$extras," in *,net,*) extra+='<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script><script src="../../fafanet.js"></script>' ;; esac
+  sed -e "s|{{TITLE}}|$title|g" -e "s|{{EXTRA}}|$extra|" "$HERE/player.html" > "$SITE/games/$id/index.html"
 done
 
-cp "$HERE/index.html" "$HERE/play.html" "$HERE/touch.js" "$SITE/"
+cp "$HERE/index.html" "$HERE/play.html" "$HERE/touch.js" "$HERE/fafanet.js" "$SITE/"
 cp -r "$HERE/thumbs" "$SITE/"
 touch "$SITE/.nojekyll"  # GitHub Pages: serwuj pliki bez przetwarzania
 
