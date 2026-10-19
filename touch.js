@@ -5,14 +5,44 @@
   if (!matchMedia('(pointer: coarse)').matches) return;
 
   var KEYS = {
-    left:  { key: 'a', code: 'KeyA', keyCode: 65 },
-    right: { key: 'd', code: 'KeyD', keyCode: 68 },
-    jump:  { key: ' ', code: 'Space', keyCode: 32 },
+    a: { key: 'a', code: 'KeyA', keyCode: 65 },
+    d: { key: 'd', code: 'KeyD', keyCode: 68 },
+    w: { key: 'w', code: 'KeyW', keyCode: 87 },
+    s: { key: 's', code: 'KeyS', keyCode: 83 },
+    j: { key: 'j', code: 'KeyJ', keyCode: 74 },
+    m: { key: 'm', code: 'KeyM', keyCode: 77 },
+    r: { key: 'r', code: 'KeyR', keyCode: 82 },
+    space: { key: ' ', code: 'Space', keyCode: 32 },
     enter: { key: 'Enter', code: 'Enter', keyCode: 13 },
-    r:     { key: 'r', code: 'KeyR', keyCode: 82 }
+    escape: { key: 'Escape', code: 'Escape', keyCode: 27 }
   };
-  var down = {};
 
+  // Układ dla każdej gry (nazwa katalogu w games/).
+  //   stick: 'x' — tylko lewo/prawo, 'xy' — też góra/dół (W/S)
+  //   big:   duże przyciski akcji po prawej, od dołu
+  //   small: małe przyciski u góry, od prawej
+  var LAYOUTS = {
+    crystal_collector: {
+      stick: 'x',
+      big: [['SKOK', 'space']],
+      small: [['↻', 'r'], ['START', 'enter']]
+    },
+    dungeon_escape: {
+      stick: 'x',
+      big: [['SKOK', 'space']],
+      small: [['↻', 'r'], ['MAPA', 'm'], ['START', 'enter']]
+    },
+    zapomniane_krolestwo: {
+      stick: 'xy',
+      big: [['SKOK', 'space'], ['MIECZ', 'j']],
+      small: [['❚❚', 'escape'], ['START', 'enter']]
+    }
+  };
+  var game = location.pathname.split('/').filter(Boolean).pop();
+  var layout = LAYOUTS[game];
+  if (!layout) return;
+
+  var down = {};
   function send(name, pressed) {
     if (!!down[name] === pressed) return;
     down[name] = pressed;
@@ -39,12 +69,11 @@
     '.tc-knob { position: absolute; left: 50%; top: 50%; width: 64px; height: 64px; margin: -32px 0 0 -32px;' +
     '  border-radius: 50%; background: rgba(255,211,77,.75); box-shadow: 0 2px 8px #0008; }' +
     '.tc-btn { display: flex; align-items: center; justify-content: center; border-radius: 50%;' +
-    '  font: 800 16px system-ui, sans-serif; color: #fff; background: rgba(255,255,255,.14);' +
+    '  font: 800 13px system-ui, sans-serif; color: #fff; background: rgba(255,255,255,.14);' +
     '  border: 3px solid rgba(255,255,255,.4); text-shadow: 0 1px 3px #000; }' +
     '.tc-btn.on { background: rgba(255,211,77,.6); }' +
-    '.tc-jump { right: 28px; bottom: 36px; width: 104px; height: 104px; font-size: 20px; }' +
-    '.tc-small { width: 58px; height: 58px; font-size: 13px; top: 14px; }' +
-    '.tc-enter { right: 90px; } .tc-r { right: 20px; }' +
+    '.tc-big { width: 96px; height: 96px; font-size: 18px; }' +
+    '.tc-small { width: 58px; height: 58px; top: 14px; }' +
     '.tc-rotate { position: fixed; inset: 0; z-index: 20; display: none; align-items: center; justify-content: center;' +
     '  text-align: center; padding: 24px; background: #12101f; color: #ffd34d; font: 700 20px system-ui, sans-serif; }' +
     '@media (orientation: portrait) { .tc-rotate { display: flex; } }';
@@ -58,7 +87,7 @@
     return d;
   }
 
-  // joystick: wychylenie w lewo/prawo, wychylenie w górę też skacze
+  // joystick
   var stick = el('tc-stick', '<div class="tc-knob"></div>');
   var knob = stick.firstChild;
   var stickId = null;
@@ -68,16 +97,21 @@
     var dx = e.clientX - (r.left + max), dy = e.clientY - (r.top + max);
     var len = Math.sqrt(dx * dx + dy * dy);
     if (len > max) { dx = dx / len * max; dy = dy / len * max; }
+    if (layout.stick === 'x') dy = 0;
     knob.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-    var dead = max * 0.3;
-    send('left', dx < -dead);
-    send('right', dx > dead);
+    var dead = max * 0.35;
+    send('a', dx < -dead);
+    send('d', dx > dead);
+    if (layout.stick === 'xy') {
+      // góra/dół trzeba wychylić wyraźniej, żeby bieg w bok nie włączał ich przypadkiem
+      send('w', dy < -max * 0.55);
+      send('s', dy > max * 0.55);
+    }
   }
   function releaseStick() {
     stickId = null;
     knob.style.transform = '';
-    send('left', false);
-    send('right', false);
+    ['a', 'd', 'w', 's'].forEach(function (k) { send(k, false); });
   }
   stick.addEventListener('pointerdown', function (e) {
     e.preventDefault();
@@ -90,8 +124,9 @@
   stick.addEventListener('pointerup', releaseStick);
   stick.addEventListener('pointercancel', releaseStick);
 
-  function button(cls, label, name) {
+  function button(cls, label, name, pos) {
     var b = el('tc-btn ' + cls, label);
+    for (var p in pos) b.style[p] = pos[p] + 'px';
     function up() { b.classList.remove('on'); send(name, false); }
     b.addEventListener('pointerdown', function (e) {
       e.preventDefault();
@@ -102,15 +137,17 @@
     });
     b.addEventListener('pointerup', up);
     b.addEventListener('pointercancel', up);
-    return b;
   }
-  button('tc-jump', 'SKOK', 'jump');
-  button('tc-small tc-enter', 'START', 'enter');
-  button('tc-small tc-r', '↻', 'r');
+  // duże przyciski: pierwszy w rogu, kolejne ukośnie w lewo i w górę (wygodnie pod kciukiem)
+  layout.big.forEach(function (b, i) {
+    button('tc-big', b[0], b[1], { right: 28 + i * 100, bottom: 30 + i * 60 });
+  });
+  layout.small.forEach(function (b, i) {
+    button('tc-small', b[0], b[1], { right: 20 + i * 70 });
+  });
 
   el('tc-rotate', 'Obróć telefon poziomo 📱↻');
 
-  // bez tego długie przytrzymanie otwiera menu, a dwa stuknięcia powiększają stronę
   document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   document.addEventListener('touchstart', unlockAudio, { passive: true });
 })();

@@ -12,11 +12,11 @@ SITE="$HERE/site"
 TMP="$HERE/.build"
 LOVEJS="$HERE/.lovejs/node_modules/love.js"
 
-# katalog_gry|tytuł|sterowanie dotykowe (touch = joystick i przycisk skoku na telefonie)
+# katalog_gry|tytuł|sterowanie dotykowe (touch = przyciski na telefonie, układ w touch.js)
 GAMES=(
   "crystal_collector|Crystal Collector|touch"
-  "dungeon_escape|Dungeon Escape"
-  "zapomniane_krolestwo|Zapomniane Królestwo"
+  "dungeon_escape|Dungeon Escape|touch"
+  "zapomniane_krolestwo|Zapomniane Królestwo|touch"
   "zelazne_imperium|Żelazne Imperium"
   "KrolestwoGiganta|Królestwo na Grzbiecie Giganta"
 )

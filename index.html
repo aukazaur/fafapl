@@ -41,6 +41,14 @@
     .body { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
     .tag { align-self: flex-start; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
            padding: 3px 9px; border-radius: 99px; background: var(--bg2); color: var(--cyan); }
+    .filters { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 0 0 28px; }
+    .filters button {
+      font: 800 16px Nunito, system-ui, sans-serif; color: var(--muted); background: var(--card);
+      border: 2px solid var(--line); border-radius: 99px; padding: 10px 20px; cursor: pointer;
+    }
+    .filters button:hover { color: var(--text); border-color: var(--muted); }
+    .filters button[aria-pressed="true"] { color: #12101f; background: var(--gold); border-color: var(--gold); }
+    .card[hidden] { display: none; }
     .tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .tag.mobile { color: var(--gold); }
     h2 { margin: 2px 0 0; font-size: 22px; }
@@ -57,6 +65,10 @@
     <p class="tagline">Gry, które zrobiliśmy sami. Wybierz jedną i graj w przeglądarce!</p>
   </header>
   <main>
+    <div class="filters" role="group" aria-label="Pokaż gry">
+      <button type="button" data-filter="all">🎮 Wszystkie gry</button>
+      <button type="button" data-filter="mobile">📱 Na telefon</button>
+    </div>
     <div class="grid" id="games"></div>
   </main>
   <footer>Zrobione w LÖVE · działa w przeglądarce dzięki love.js</footer>
@@ -68,10 +80,10 @@
         keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>Enter</kbd> start', mobile: true },
       { id: 'dungeon_escape', title: 'Dungeon Escape', tag: 'Platformówka',
         desc: 'Uciekaj z lochu! Znajdź trzy klucze ukryte w otwartym świecie, unikaj pułapek i otwórz wielką bramę.',
-        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>M</kbd> mapa' },
+        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>M</kbd> mapa', mobile: true },
       { id: 'zapomniane_krolestwo', title: 'Zapomniane Królestwo', tag: 'Przygoda akcji',
         desc: 'Przemierz ruiny dawnego królestwa, walcz mieczem z potworami, odkrywaj sekrety i pokonaj Upadłego Króla.',
-        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>J</kbd> miecz' },
+        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>J</kbd> miecz', mobile: true },
       { id: 'zelazne_imperium', title: 'Żelazne Imperium', tag: 'Strategia RTS',
         desc: 'Królestwo Świtu kontra Czerwony Legion. Zbieraj surowce, buduj osadę, szkol armię i pokonaj wroga.',
         keys: 'Mysz · <kbd>F1</kbd> pomoc i sterowanie' },
@@ -81,12 +93,21 @@
     ];
 
     document.getElementById('games').innerHTML = GAMES.map(function (g) {
-      return '<a class="card" href="play.html?gra=' + g.id + '">' +
+      return '<a class="card" href="play.html?gra=' + g.id + '"' + (g.mobile ? ' data-mobile' : '') + '>' +
         '<div class="thumb"><img src="thumbs/' + g.id + '.jpg" alt="" loading="lazy"><div class="play">▶ GRAJ</div></div>' +
         '<div class="body"><div class="tags"><span class="tag">' + g.tag + '</span>' +
         (g.mobile ? '<span class="tag mobile">📱 działa na telefonie</span>' : '') + '</div><h2>' + g.title + '</h2>' +
         '<p class="desc">' + g.desc + '</p><div class="keys">' + g.keys + '</div></div></a>';
     }).join('');
+
+    // filtr: wszystkie gry albo tylko te ze sterowaniem dotykowym (na telefonie domyślnie ten drugi)
+    var buttons = document.querySelectorAll('.filters button');
+    function setFilter(f) {
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.filter === f); });
+      document.querySelectorAll('.card').forEach(function (c) { c.hidden = f === 'mobile' && !c.hasAttribute('data-mobile'); });
+    }
+    buttons.forEach(function (b) { b.onclick = function () { setFilter(b.dataset.filter); }; });
+    setFilter(matchMedia('(pointer: coarse)').matches ? 'mobile' : 'all');
   </script>
 </body>
 </html>
