@@ -55,6 +55,7 @@ done
 
 cp "$HERE/index.html" "$HERE/play.html" "$SITE/"
 cp -r "$HERE/thumbs" "$SITE/"
+touch "$SITE/.nojekyll"  # GitHub Pages: serwuj pliki bez przetwarzania
 
 rm -rf "$TMP"
 echo ">> gotowe: $SITE"
@@ -62,4 +63,13 @@ echo ">> gotowe: $SITE"
 if [ "${1:-}" = "serve" ]; then
   echo ">> strona działa na http://localhost:8000 (Ctrl+C kończy)"
   cd "$SITE" && python3 -m http.server 8000
+fi
+
+# ./build.sh publish — wyślij zbudowaną stronę na GitHub Pages (gałąź gh-pages)
+if [ "${1:-}" = "publish" ]; then
+  cd "$HERE"
+  git add -A && git commit -qm "Aktualizacja strony" || true
+  git push -q origin main
+  git push -qf origin "$(git subtree split --prefix site)":gh-pages
+  echo ">> wysłane — strona odświeży się za ok. minutę"
 fi
