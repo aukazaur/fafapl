@@ -19,6 +19,7 @@ GAMES=(
   "zapomniane_krolestwo|Zapomniane Królestwo|touch"
   "zelazne_imperium|Żelazne Imperium"
   "KrolestwoGiganta|Królestwo na Grzbiecie Giganta"
+  "steal_a_squishy|Steal a Squishy"
 )
 
 if [ ! -d "$LOVEJS" ]; then
@@ -40,8 +41,11 @@ for entry in "${GAMES[@]}"; do
   cp -r "$WORK/$dir" "$stage"
   # love.js to LÖVE 11.4 — gry są pisane pod 11.5, ale API jest to samo
   sed -i 's/t.version = "11.5"/t.version = "11.4"/' "$stage/conf.lua"
-  # w przeglądarce nie da się zamknąć okna — wyjście z gry niczego nie psuje
-  printf 'love.event.quit = function() end\n' | cat - "$stage/main.lua" > "$stage/main.tmp"
+  # poprawki tylko dla wersji w przeglądarce: web/_all.lua dla wszystkich gier,
+  # web/<katalog>.lua dla jednej gry (np. wyłączenie gry przez sieć)
+  { cat "$HERE/web/_all.lua"
+    [ -f "$HERE/web/$dir.lua" ] && cat "$HERE/web/$dir.lua"
+    cat "$stage/main.lua"; } > "$stage/main.tmp"
   mv "$stage/main.tmp" "$stage/main.lua"
 
   (cd "$stage" && zip -qr "$TMP/$id.love" .)
