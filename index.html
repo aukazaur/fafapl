@@ -41,6 +41,8 @@
     .body { padding: 16px 18px 20px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
     .tag { align-self: flex-start; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;
            padding: 3px 9px; border-radius: 99px; background: var(--bg2); color: var(--cyan); }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag.mobile { color: var(--gold); }
     h2 { margin: 2px 0 0; font-size: 22px; }
     .desc { margin: 0; color: var(--muted); line-height: 1.45; }
     .keys { margin-top: auto; padding-top: 8px; font-size: 13px; color: var(--muted); }
@@ -63,7 +65,7 @@
     var GAMES = [
       { id: 'crystal_collector', title: 'Crystal Collector', tag: 'Platformówka',
         desc: 'Zbierz 10 kryształów na każdym z 10 poziomów. Skacz wrogom na głowy, ale uważaj na kolczaki i bossów.',
-        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>Enter</kbd> start' },
+        keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>Enter</kbd> start', mobile: true },
       { id: 'dungeon_escape', title: 'Dungeon Escape', tag: 'Platformówka',
         desc: 'Uciekaj z lochu! Znajdź trzy klucze ukryte w otwartym świecie, unikaj pułapek i otwórz wielką bramę.',
         keys: '<kbd>A</kbd><kbd>D</kbd> ruch · <kbd>Spacja</kbd> skok · <kbd>M</kbd> mapa' },
@@ -81,7 +83,8 @@
     document.getElementById('games').innerHTML = GAMES.map(function (g) {
       return '<a class="card" href="play.html?gra=' + g.id + '">' +
         '<div class="thumb"><img src="thumbs/' + g.id + '.jpg" alt="" loading="lazy"><div class="play">▶ GRAJ</div></div>' +
-        '<div class="body"><span class="tag">' + g.tag + '</span><h2>' + g.title + '</h2>' +
+        '<div class="body"><div class="tags"><span class="tag">' + g.tag + '</span>' +
+        (g.mobile ? '<span class="tag mobile">📱 działa na telefonie</span>' : '') + '</div><h2>' + g.title + '</h2>' +
         '<p class="desc">' + g.desc + '</p><div class="keys">' + g.keys + '</div></div></a>';
     }).join('');
   </script>
