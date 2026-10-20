@@ -41,6 +41,16 @@
     var frame = document.getElementById('game');
     frame.src = 'games/' + id + '/';
     frame.addEventListener('load', function () { frame.focus(); });
+
+    // licznik zagrań tej gry (abacus.jasoncameron.dev, pokazywany na kartach w index.html);
+    // jedno zagranie na kartę przeglądarki, więc odświeżanie nie podbija licznika
+    try {
+      if (sessionStorage.getItem('fafapl-played-' + id) !== '1') {
+        fetch('https://abacus.jasoncameron.dev/hit/fafapl/gra-' + id).then(function (r) {
+          if (r.ok) try { sessionStorage.setItem('fafapl-played-' + id, '1'); } catch (e) {}
+        }).catch(function () {});
+      }
+    } catch (e) {}
     document.getElementById('fs').onclick = function () {
       (frame.requestFullscreen || frame.webkitRequestFullscreen).call(frame);
       frame.focus();
