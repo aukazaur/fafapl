@@ -51,12 +51,17 @@
     .card[hidden] { display: none; }
     .tags { display: flex; flex-wrap: wrap; gap: 6px; }
     .tag.mobile { color: var(--gold); }
+    .tag.plays { color: var(--pink); }
     h2 { margin: 2px 0 0; font-size: 22px; }
     .desc { margin: 0; color: var(--muted); line-height: 1.45; }
     .keys { margin-top: auto; padding-top: 8px; font-size: 13px; color: var(--muted); }
     kbd { font-family: inherit; font-weight: 700; color: var(--text); background: var(--bg2); border: 1px solid var(--line);
           border-bottom-width: 3px; border-radius: 5px; padding: 0 6px; }
     footer { text-align: center; color: var(--muted); font-size: 14px; padding: 0 16px 40px; }
+    .visits { display: inline-block; margin-bottom: 14px; padding: 6px 14px; border-radius: 99px; background: var(--card);
+              border: 2px solid var(--line); font-weight: 800; color: var(--text); }
+    .visits b { color: var(--gold); }
+    .visits[hidden] { display: none; }
   </style>
 </head>
 <body>
@@ -71,7 +76,10 @@
     </div>
     <div class="grid" id="games"></div>
   </main>
-  <footer>Zrobione w LÖVE · działa w przeglądarce dzięki love.js</footer>
+  <footer>
+    <div class="visits" id="visits" hidden>👀 <b id="visits-count"></b> <span id="visits-word"></span></div><br>
+    Zrobione w LÖVE · działa w przeglądarce dzięki love.js
+  </footer>
 
   <script>
     var GAMES = [
@@ -102,7 +110,8 @@
       return '<a class="card" href="play.html?gra=' + g.id + '"' + (g.mobile ? ' data-mobile' : '') + '>' +
         '<div class="thumb"><img src="thumbs/' + g.id + '.jpg" alt="" loading="lazy"><div class="play">▶ GRAJ</div></div>' +
         '<div class="body"><div class="tags"><span class="tag">' + g.tag + '</span>' +
-        (g.mobile ? '<span class="tag mobile">📱 działa na telefonie</span>' : '') + '</div><h2>' + g.title + '</h2>' +
+        (g.mobile ? '<span class="tag mobile">📱 działa na telefonie</span>' : '') +
+        '<span class="tag plays" id="plays-' + g.id + '" hidden></span></div><h2>' + g.title + '</h2>' +
         '<p class="desc">' + g.desc + '</p><div class="keys">' + g.keys + '</div></div></a>';
     }).join('');
 
@@ -114,6 +123,41 @@
     }
     buttons.forEach(function (b) { b.onclick = function () { setFilter(b.dataset.filter); }; });
     setFilter(matchMedia('(pointer: coarse)').matches ? 'mobile' : 'all');
+
+    // licznik wejść wszystkich osób, trzymany w abacus.jasoncameron.dev (strona nie ma własnego serwera);
+    // jedno wejście na kartę przeglądarki, więc odświeżanie strony nie podbija licznika
+    var COUNTER = 'https://abacus.jasoncameron.dev/';
+    // odmiana: 1 wejście, 3 wejścia, 25 wejść
+    function plural(n, one, few, many) {
+      var last = n % 10, last2 = n % 100;
+      return n === 1 ? one : (last >= 2 && last <= 4 && (last2 < 12 || last2 > 14)) ? few : many;
+    }
+    var counted = false;
+    try { counted = sessionStorage.getItem('fafapl-counted') === '1'; } catch (e) {}
+    fetch(COUNTER + (counted ? 'get' : 'hit') + '/fafapl/wejscia')
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        var n = d.value;
+        if (typeof n !== 'number') return;
+        try { sessionStorage.setItem('fafapl-counted', '1'); } catch (e) {}
+        document.getElementById('visits-count').textContent = n.toLocaleString('pl-PL');
+        document.getElementById('visits-word').textContent = plural(n, 'wejście', 'wejścia', 'wejść');
+        document.getElementById('visits').hidden = false;
+      })
+      .catch(function () {});  // usługa nie działa — po prostu nie pokazujemy licznika
+
+    // zagrania każdej gry (podbija je play.html); gra, w którą nikt jeszcze nie grał, nie ma licznika
+    GAMES.forEach(function (g) {
+      fetch(COUNTER + 'get/fafapl/gra-' + g.id)
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (typeof d.value !== 'number') return;
+          var el = document.getElementById('plays-' + g.id);
+          el.textContent = '▶ ' + d.value.toLocaleString('pl-PL') + ' ' + plural(d.value, 'zagranie', 'zagrania', 'zagrań');
+          el.hidden = false;
+        })
+        .catch(function () {});
+    });
   </script>
 </body>
 </html>
