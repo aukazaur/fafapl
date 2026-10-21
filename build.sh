@@ -20,7 +20,7 @@ GAMES=(
   "zapomniane_krolestwo|Zapomniane Królestwo|touch"
   "zelazne_imperium|Żelazne Imperium"
   "KrolestwoGiganta|Królestwo na Grzbiecie Giganta"
-  "steal_a_squishy|Steal a Squishy|net"
+  "steal_a_squishy|Steal a Squishy|net,touch"
   "endless_waves|Endless Waves"
 )
 

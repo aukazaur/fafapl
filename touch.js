@@ -9,12 +9,15 @@
     d: { key: 'd', code: 'KeyD', keyCode: 68 },
     w: { key: 'w', code: 'KeyW', keyCode: 87 },
     s: { key: 's', code: 'KeyS', keyCode: 83 },
+    e: { key: 'e', code: 'KeyE', keyCode: 69 },
+    f: { key: 'f', code: 'KeyF', keyCode: 70 },
     j: { key: 'j', code: 'KeyJ', keyCode: 74 },
     m: { key: 'm', code: 'KeyM', keyCode: 77 },
     r: { key: 'r', code: 'KeyR', keyCode: 82 },
     space: { key: ' ', code: 'Space', keyCode: 32 },
     enter: { key: 'Enter', code: 'Enter', keyCode: 13 },
-    escape: { key: 'Escape', code: 'Escape', keyCode: 27 }
+    escape: { key: 'Escape', code: 'Escape', keyCode: 27 },
+    tab: { key: 'Tab', code: 'Tab', keyCode: 9 }
   };
 
   // Układ dla każdej gry (nazwa katalogu w games/).
@@ -36,6 +39,12 @@
       stick: 'xy',
       big: [['SKOK', 'space'], ['MIECZ', 'j']],
       small: [['❚❚', 'escape'], ['START', 'enter']]
+    },
+    // na ekranie tytułowym joystick w lewo/prawo zmienia liczbę botów
+    steal_a_squishy: {
+      stick: 'xy',
+      big: [['KUP', 'e'], ['PLASK', 'space'], ['SPRZEDAJ', 'f']],
+      small: [['MENU', 'escape'], ['START', 'enter'], ['📖', 'tab']]
     }
   };
   var game = location.pathname.split('/').filter(Boolean).pop();
@@ -126,6 +135,7 @@
 
   function button(cls, label, name, pos) {
     var b = el('tc-btn ' + cls, label);
+    if (label.length > 5) b.style.fontSize = '14px';  // długie napisy muszą się zmieścić w kółku
     for (var p in pos) b.style[p] = pos[p] + 'px';
     function up() { b.classList.remove('on'); send(name, false); }
     b.addEventListener('pointerdown', function (e) {

@@ -58,10 +58,12 @@
     kbd { font-family: inherit; font-weight: 700; color: var(--text); background: var(--bg2); border: 1px solid var(--line);
           border-bottom-width: 3px; border-radius: 5px; padding: 0 6px; }
     footer { text-align: center; color: var(--muted); font-size: 14px; padding: 0 16px 40px; }
-    .visits { display: inline-block; margin-bottom: 14px; padding: 6px 14px; border-radius: 99px; background: var(--card);
+    .visits { display: inline-block; padding: 6px 14px; border-radius: 99px; background: var(--card);
               border: 2px solid var(--line); font-weight: 800; color: var(--text); }
     .visits b { color: var(--gold); }
     .visits[hidden] { display: none; }
+    /* na telefonie klawiszologia nic nie daje — sterowanie jest na ekranie */
+    @media (pointer: coarse) { .keys { display: none; } }
   </style>
 </head>
 <body>
@@ -77,8 +79,7 @@
     <div class="grid" id="games"></div>
   </main>
   <footer>
-    <div class="visits" id="visits" hidden>👀 <b id="visits-count"></b> <span id="visits-word"></span></div><br>
-    Zrobione w LÖVE · działa w przeglądarce dzięki love.js
+    <div class="visits" id="visits" hidden>👀 <b id="visits-count"></b> <span id="visits-word"></span></div>
   </footer>
 
   <script>
@@ -99,8 +100,8 @@
         desc: 'Zbuduj osadę na plecach wędrującego giganta, broń jej przed napadami i wyruszaj na wyprawy do ruin.',
         keys: 'Mysz · <kbd>1</kbd>–<kbd>5</kbd> budynki · <kbd>H</kbd> pomoc' },
       { id: 'steal_a_squishy', title: 'Steal a Squishy', tag: 'Kolekcjonowanie',
-        desc: 'Kupuj squishy z pasów, zbieraj kasę, którą dla ciebie zarabiają, i podkradaj najlepsze pięciu rywalom. Graj sam z botami albo ze znajomymi przez internet: H tworzy grę z kodem, J dołącza.',
-        keys: '<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ruch · <kbd>E</kbd> kup / ukradnij · <kbd>Spacja</kbd> plaskacz' },
+        desc: 'Kupuj squishy z pasów, zbieraj kasę, którą dla ciebie zarabiają, i podkradaj rywalom najlepsze. Graj sam z botami albo na komputerze ze znajomymi przez internet (H tworzy grę z kodem, J dołącza).',
+        keys: '<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ruch · <kbd>E</kbd> kup / ukradnij · <kbd>Spacja</kbd> plaskacz', mobile: true },
       { id: 'endless_waves', title: 'Endless Waves', tag: 'Survivor',
         desc: 'Przetrwaj hordy potworów w czterech światach i pokonaj dziesięciu bossów. Bronie strzelają same, a ty wybierasz ulepszenia, aż obszar ataku zakryje cały ekran. Na końcu czekają nieskończone fale.',
         keys: '<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> ruch · <kbd>1</kbd>–<kbd>4</kbd> ulepszenie · <kbd>Esc</kbd> pauza' }
