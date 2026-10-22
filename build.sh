@@ -22,6 +22,8 @@ GAMES=(
   "KrolestwoGiganta|Królestwo na Grzbiecie Giganta"
   "steal_a_squishy|Steal a Squishy|net,touch"
   "endless_waves|Endless Waves"
+  "KronikiOstatniegoKrolestwa|Kroniki Ostatniego Królestwa"
+  "steal_an_egg|Steal an Egg|touch"
 )
 
 if [ ! -d "$LOVEJS" ]; then

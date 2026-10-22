@@ -45,6 +45,11 @@
       stick: 'xy',
       big: [['KUP', 'e'], ['PLASK', 'space'], ['SPRZEDAJ', 'f']],
       small: [['MENU', 'escape'], ['START', 'enter'], ['📖', 'tab']]
+    },
+    steal_an_egg: {
+      stick: 'xy',
+      big: [['WEŹ', 'e'], ['SPRZEDAJ', 'f']],
+      small: [['MENU', 'escape'], ['START', 'enter']]
     }
   };
   var game = location.pathname.split('/').filter(Boolean).pop();
