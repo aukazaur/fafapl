@@ -32,6 +32,9 @@ if [ ! -d "$LOVEJS" ]; then
   (cd "$HERE/.lovejs" && echo '{"name":"lovejs-tool","private":true}' > package.json && npm install --silent love.js@11.4.1)
 fi
 
+# numer wersji doklejany do adresów plików gry — po aktualizacji przeglądarka nie weźmie starej kopii z pamięci
+VER="$(date +%s)"
+
 rm -rf "$TMP" "$SITE/games"
 mkdir -p "$TMP" "$SITE/games" "$SITE/engine"
 cp "$LOVEJS/src/compat/love.js" "$LOVEJS/src/compat/love.wasm" "$SITE/engine/"
@@ -58,12 +61,13 @@ for entry in "${GAMES[@]}"; do
   mkdir -p "$SITE/games/$id"
   cp "$TMP/$id-out/game.js" "$TMP/$id-out/game.data" "$SITE/games/$id/"
   extra=""
-  case ",$extras," in *,touch,*) extra+='<script src="../../touch.js"></script>' ;; esac
-  case ",$extras," in *,net,*) extra+='<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script><script src="../../fafanet.js"></script>' ;; esac
-  sed -e "s|{{TITLE}}|$title|g" -e "s|{{EXTRA}}|$extra|" "$HERE/player.html" > "$SITE/games/$id/index.html"
+  case ",$extras," in *,touch,*) extra+="<script src=\"../../touch.js?v=$VER\"></script>" ;; esac
+  case ",$extras," in *,net,*) extra+="<script src=\"https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js\"></script><script src=\"../../fafanet.js?v=$VER\"></script>" ;; esac
+  sed -e "s|{{TITLE}}|$title|g" -e "s|{{EXTRA}}|$extra|" -e "s|{{VER}}|$VER|g" "$HERE/player.html" > "$SITE/games/$id/index.html"
 done
 
-cp "$HERE/index.html" "$HERE/play.html" "$HERE/touch.js" "$HERE/fafanet.js" "$SITE/"
+cp "$HERE/index.html" "$HERE/touch.js" "$HERE/fafanet.js" "$SITE/"
+sed "s|{{VER}}|$VER|g" "$HERE/play.html" > "$SITE/play.html"
 cp -r "$HERE/thumbs" "$SITE/"
 touch "$SITE/.nojekyll"  # GitHub Pages: serwuj pliki bez przetwarzania
 
