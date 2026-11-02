@@ -14,6 +14,13 @@
     #title { font-weight: 800; font-size: 18px; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     button { font: inherit; font-weight: 800; color: #12101f; background: #ffd34d; border: 0; border-radius: 8px; padding: 6px 14px; cursor: pointer; }
     button:hover { background: #ffe28a; }
+    .rate { display: flex; align-items: center; gap: 6px; }
+    .rate span { color: #a9a2c9; font-size: 14px; white-space: nowrap; }
+    .rate button { background: #231f3b; color: #f2eefe; border: 2px solid #3a3460; padding: 4px 10px; }
+    .rate button:hover:not(:disabled) { background: #2f2950; border-color: #a9a2c9; }
+    .rate button:disabled { cursor: default; opacity: .45; }
+    .rate button.chosen { opacity: 1; border-color: #ffd34d; background: #3a3218; }
+    @media (max-width: 640px) { .rate span { display: none; } }
     iframe { flex: 1; width: 100%; border: 0; display: block; }
   </style>
 </head>
@@ -21,6 +28,11 @@
   <nav>
     <a class="logo" href="./">Fafa<span>Pl</span></a>
     <div id="title"></div>
+    <div class="rate" role="group" aria-label="Oceń grę">
+      <span id="rate-text">Podoba ci się?</span>
+      <button id="up" title="Podoba mi się">👍 <b id="up-n"></b></button>
+      <button id="down" title="Nie podoba mi się">👎 <b id="down-n"></b></button>
+    </div>
     <button id="fs">⛶ Pełny ekran</button>
   </nav>
   <iframe id="game" allow="fullscreen; autoplay; gamepad" allowfullscreen></iframe>
@@ -53,6 +65,42 @@
         }).catch(function () {});
       }
     } catch (e) {}
+    // ocena gry: 👍 / 👎, liczone w Abacus (fafapl/lubi-<gra> i fafapl/nielubi-<gra>), pokazywane na kartach w index.html.
+    // Abacus nie umie odejmować, więc głos jest jeden na przeglądarkę i nie da się go zmienić.
+    var COUNTER = 'https://abacus.jasoncameron.dev/';
+    var KEYS = { up: 'lubi-' + id, down: 'nielubi-' + id };
+    var counts = { up: 0, down: 0 };
+    var vote = null;
+    try { vote = localStorage.getItem('fafapl-ocena-' + id); } catch (e) {}
+    function showRating() {
+      ['up', 'down'].forEach(function (k) {
+        document.getElementById(k + '-n').textContent = counts[k] ? counts[k].toLocaleString('pl-PL') : '';
+        var b = document.getElementById(k);
+        b.disabled = !!vote;
+        b.classList.toggle('chosen', vote === k);
+      });
+      document.getElementById('rate-text').textContent = vote ? 'Dzięki za ocenę!' : 'Podoba ci się?';
+    }
+    ['up', 'down'].forEach(function (k) {
+      fetch(COUNTER + 'get/fafapl/' + KEYS[k])
+        .then(function (r) { return r.json(); })
+        .then(function (d) { if (typeof d.value === 'number') { counts[k] = d.value; showRating(); } })
+        .catch(function () {});
+      document.getElementById(k).onclick = function () {
+        if (vote) return;
+        vote = k;
+        counts[k]++;
+        try { localStorage.setItem('fafapl-ocena-' + id, k); } catch (e) {}
+        showRating();
+        fetch(COUNTER + 'hit/fafapl/' + KEYS[k])
+          .then(function (r) { return r.json(); })
+          .then(function (d) { if (typeof d.value === 'number') { counts[k] = d.value; showRating(); } })
+          .catch(function () {});
+        frame.focus();
+      };
+    });
+    showRating();
+
     document.getElementById('fs').onclick = function () {
       (frame.requestFullscreen || frame.webkitRequestFullscreen).call(frame);
       frame.focus();

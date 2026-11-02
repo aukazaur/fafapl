@@ -58,6 +58,13 @@
     kbd { font-family: inherit; font-weight: 700; color: var(--text); background: var(--bg2); border: 1px solid var(--line);
           border-bottom-width: 3px; border-radius: 5px; padding: 0 6px; }
     footer { text-align: center; color: var(--muted); font-size: 14px; padding: 0 16px 40px; }
+    .rating { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 800; }
+    .rating[hidden] { display: none; }
+    .rating .bar { flex: 1; height: 8px; border-radius: 99px; background: #e2506a; overflow: hidden; }
+    .rating .bar i { display: block; height: 100%; background: #4ed27a; }
+    .rating .up { color: #4ed27a; }
+    .rating .down { color: #ff7d93; }
+    .rating .verdict { color: var(--text); }
     .visits { display: inline-block; padding: 6px 14px; border-radius: 99px; background: var(--card);
               border: 2px solid var(--line); font-weight: 800; color: var(--text); }
     .visits b { color: var(--gold); }
@@ -119,7 +126,8 @@
         '<div class="body"><div class="tags"><span class="tag">' + g.tag + '</span>' +
         (g.mobile ? '<span class="tag mobile">📱 działa na telefonie</span>' : '') +
         '<span class="tag plays" id="plays-' + g.id + '" hidden></span></div><h2>' + g.title + '</h2>' +
-        '<p class="desc">' + g.desc + '</p><div class="keys">' + g.keys + '</div></div></a>';
+        '<p class="desc">' + g.desc + '</p>' +
+        '<div class="rating" id="rating-' + g.id + '" hidden></div><div class="keys">' + g.keys + '</div></div></a>';
     }).join('');
 
     // filtr: wszystkie gry albo tylko te ze sterowaniem dotykowym (na telefonie domyślnie ten drugi)
@@ -164,6 +172,32 @@
           el.hidden = false;
         })
         .catch(function () {});
+    });
+
+    // oceny 👍 / 👎 (oddawane w play.html); brak klucza w Abacus = nikt jeszcze tak nie zagłosował
+    function getCount(key) {
+      return fetch(COUNTER + 'get/fafapl/' + key)
+        .then(function (r) { return r.json(); })
+        .then(function (d) { return typeof d.value === 'number' ? d.value : 0; })
+        .catch(function () { return 0; });
+    }
+    function verdict(p) {
+      return p >= 80 ? '😍 Uwielbiana' : p >= 60 ? '🙂 Lubiana' : p >= 40 ? '😐 Tak sobie' : p >= 20 ? '🙁 Mało lubiana' : '😖 Nielubiana';
+    }
+    GAMES.forEach(function (g) {
+      Promise.all([getCount('lubi-' + g.id), getCount('nielubi-' + g.id)]).then(function (c) {
+        var up = c[0], down = c[1], all = up + down;
+        var el = document.getElementById('rating-' + g.id);
+        if (!all) {
+          el.innerHTML = '<span class="verdict">⭐ Nikt jeszcze nie ocenił — zagraj i oceń!</span>';
+        } else {
+          var p = Math.round(up / all * 100);
+          el.innerHTML = '<span class="verdict" title="' + p + '% osób lubi tę grę">' + verdict(p) + '</span>' +
+            '<span class="up">👍 ' + up + '</span><div class="bar"><i style="width:' + p + '%"></i></div>' +
+            '<span class="down">👎 ' + down + '</span>';
+        }
+        el.hidden = false;
+      });
     });
   </script>
 </body>
