@@ -23,7 +23,7 @@ GAMES=(
   "steal_a_squishy|Steal a Squishy|net,touch"
   "endless_waves|Endless Waves"
   "KronikiOstatniegoKrolestwa|Kroniki Ostatniego Królestwa"
-  "steal_an_egg|Steal an Egg|touch"
+  "ImperiumKaczek|Imperium Kaczek"
 )
 
 if [ ! -d "$LOVEJS" ]; then
