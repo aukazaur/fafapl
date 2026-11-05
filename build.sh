@@ -70,6 +70,7 @@ done
 # plik to strona bez <head> (tak jak artefakt Claude), więc doklejamy szkielet dokumentu
 HTML_GAMES=(
   "zamieniacze.html|zamieniacze"
+  "kopacz-potworkow.html|kopacz_potworkow"
 )
 for entry in "${HTML_GAMES[@]}"; do
   IFS='|' read -r file id <<< "$entry"
