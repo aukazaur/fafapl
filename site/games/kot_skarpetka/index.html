@@ -54,7 +54,7 @@ body{
   <div class="plansza" id="start">
     <canvas id="logoKot" width="88" height="48"></canvas>
     <h1>Kot Skarpetka</h1>
-    <p>Skarpetka biegnie przez wieś o zachodzie słońca.<br>Przeskakuj <span class="zolty">płoty</span> i rowy z wodą, skacz po <span class="zolty">dachach</span> i <span class="zolty">belach siana</span>,<br>a na <span class="zolty">myszy</span> naskakuj z góry!</p>
+    <p>Skarpetka biegnie przez wieś o zachodzie słońca.<br>Przeskakuj <span class="zolty">płoty</span> i rowy, skacz po <span class="zolty">dachach</span>, <span class="zolty">wozach</span>, <span class="zolty">stogach</span> i <span class="zolty">kłodach</span> na rzece.<br>Pod <span class="zolty">wroną</span> lepiej przebiec, a na <span class="zolty">gęsi</span> i <span class="zolty">myszy</span> naskakuj z góry!</p>
     <p class="mig">Spacja / klik / dotknij = skok</p>
   </div>
   <div class="plansza" id="koniec" hidden>
@@ -234,6 +234,19 @@ const MYSZ=[
  sprite(['...PM.....','..MMMMMM..','PMKMMMMMM.','.MMMMMMMPP','...M...M..'],MYSZ_PAL),
 ];
 
+const GES_PAL={W:'#fbf6ee', w:'#cfc6d6', O:'#f08a3c', K:'#1a1420'};
+const GES_GORA=['..WW..........','.WKW..........','OOWW..........','..WW..........','..WW..........',
+ '..WW....WW....','..WWWWWWWWWW..','..WWWwwwwWWWW.','...WWwwwwwWWW.','....WWWWWWWW..'];
+const GES=[
+ sprite([...GES_GORA,'......O..O....','.....OO.OO....'],GES_PAL),
+ sprite([...GES_GORA,'.....O....O...','....OO...OO...'],GES_PAL),
+];
+const WRONA_PAL={K:'#15111c', D:'#7a6a9e', Y:'#ffc77a', E:'#e8e0f0'};
+const WRONA=[
+ sprite(['.....K......','.....KK.....','.KK...KD....','YKEKKKKKKKK.','.KKKDDDKKKKK','....KKKK....','............'],WRONA_PAL),
+ sprite(['............','............','.KK.........','YKEKKKKKKKK.','.KKKDDDKKKKK','....KKKKD...','.....KD.....'],WRONA_PAL),
+];
+
 /* ---------- tło ---------- */
 function wzgorza(szer, kolor, base, amp, k1, k2, drzewa, chaty, okno, wiatrak){
   const c=document.createElement('canvas'); c.width=szer; c.height=H; const x=c.getContext('2d');
@@ -324,20 +337,50 @@ function generuj(){
   const lead=Math.round(air*0.85+rnd(10,70)*(1.2-d));
   ground(x,lead); x+=lead;
   const t=Math.random();
-  if(t<0.17){ // płot
+  if(t<0.13){ // płot
     const w=[12,16,20,24,28][ri(0, d<.3?1:d<.6?3:4)], h=ri(10,14);
     ground(x,w); hazards.push({x,y:GROUND-h,w,h,k:'plot'}); x+=w;
     if(Math.random()<.35){ const g=ri(70,110); ground(x,g); dodajMysz(x+g*.75,GROUND,x+air*.5,x+g-10); x+=g; }
-  } else if(t<0.26){ // kosze
+  } else if(t<0.20){ // kosze
     const n=ri(1, d<.4?2:3);
     ground(x,n*11);
     for(let i=0;i<n;i++) solids.push({x:x+i*11,y:GROUND-14,w:10,h:14,k:'kosz'});
     x+=n*11;
-  } else if(t<0.34){ // dziura
+  } else if(t<0.26){ // stóg siana: bele ułożone w schodki
+    const wz=d<.35?[[1,2,1],[1,2,2,1],[2,2],[1,1,2]]:[[1,2,3,2,1],[1,2,3,3,2,1],[2,3,2],[1,2,2,1]];
+    const lv=wz[ri(0,wz.length-1)];
+    ground(x,lv.length*11);
+    lv.forEach((n,i)=>solids.push({x:x+i*11,y:GROUND-14*n,w:10,h:14*n,k:'kosz'}));
+    x+=lv.length*11;
+  } else if(t<0.33){ // dziura
     x+=Math.round(rnd(air*.3, air*(.4+.15*d)));
-  } else if(t<0.42){ // mysz na chodniku
+  } else if(t<0.39){ // mysz na chodniku
     const g=ri(90,150); ground(x,g); dodajMysz(x+g*.6,GROUND,x,x+g-10); x+=g;
-  } else if(t<0.68){ // kładki w powietrzu
+  } else if(t<0.47){ // gęś: chodzi w tę i z powrotem, syczy; naskok z góry ją płoszy
+    const g=ri(110,160); ground(x,g);
+    hazards.push({k:'ges',x:x+g*.7,y:GROUND-12,w:14,h:12,vx:-20,minX:x+20,maxX:x+g-16,t:0,st:'idzie'});
+    x+=g;
+  } else if(t<0.54){ // wrona nisko nad ziemią — lepiej nie skakać
+    const g=ri(190,240); ground(x,g);
+    const n=d>.45 && Math.random()<.4 ? 2 : 1;
+    for(let i=0;i<n;i++) hazards.push({k:'wrona',x:x+g-10+i*36,y0:GROUND-33,y:GROUND-33,w:12,h:7,vx:-45,t:rnd(0,1),aktywna:false});
+    x+=g;
+  } else if(t<0.61){ // rzeka z kłodami kołyszącymi się na wodzie
+    const n=ri(2, d<.4?3:4);
+    x+=ri(10,18);
+    for(let i=0;i<n;i++){
+      const w=ri(24,36);
+      solids.push({x,y0:GROUND+4,y:GROUND+4,w,h:6,k:'kloda',jedno:true,bob:true,t:rnd(0,TAU)});
+      x+=w;
+      if(i<n-1) x+=ri(12, Math.max(14,Math.round(air*(.3+.1*d))));
+    }
+    x+=ri(10,18);
+  } else if(t<0.66){ // wóz z sianem
+    const w=ri(46,62), h=ri(22,26);
+    ground(x,w); solids.push({x,y:GROUND-h,w,h,k:'woz'});
+    if(Math.random()<.45) dodajMysz(x+w*.6,GROUND-h,x+2,x+w-12);
+    x+=w;
+  } else if(t<0.83){ // kładki w powietrzu
     const n=ri(2,5), start=x, pod=Math.random();
     let top=GROUND-ri(24,36);
     for(let i=0;i<n;i++){
@@ -418,6 +461,8 @@ function krok(dt){
   if(trzes>0) trzes-=dt;
   if(P.zywy) aktualizujKota(dt);
   for(const m of mice) ruchMyszy(m,dt);
+  for(const s of solids) if(s.bob){ s.t+=dt*2.6; s.y=s.y0+1.5*Math.sin(s.t); }
+  for(const z of hazards) if(z.k!=='plot') ruchZwierza(z,dt);
   if(stan!=='gra' || !P.zywy) return;
 
   const p=P;
@@ -437,12 +482,21 @@ function krok(dt){
   p.y+=p.vy*dt; p.grounded=false;
   for(const s of solids){
     if(!overlap(p,s)) continue;
-    if(s.jedno){ if(p.vy>=0 && prevBottom<=s.y+1){ p.y=s.y-p.h; p.vy=0; p.grounded=true; } continue; }
+    if(s.jedno){ if(p.vy>=0 && prevBottom<=s.y+(s.bob?4:1)){ p.y=s.y-p.h; p.vy=0; p.grounded=true; } continue; }
     if(p.vy>=0 && prevBottom<=s.y+6){ p.y=s.y-p.h; p.vy=0; p.grounded=true; }
     else if(p.vy<0){ p.y=s.y+s.h; p.vy=0; }
   }
   if(p.grounded){ p.coyote=.08; if(!bylNaZiemi && vyPrzed>150){ A.sq=Math.min(1,vyPrzed/420); kurz(p.x+7,p.y+p.h,7,0); } }
   for(const z of hazards){
+    if(z.st==='leci') continue;
+    if(z.k==='ges' && vyPrzed>0 && prevBottom<=z.y+4 && overlap(p,z)){ // naskok na gęś
+      z.st='leci'; z.vx=60; z.t=0;
+      p.vy=-JUMP*.85; p.grounded=false; p.coyote=0; A.st=.8;
+      dzwiek(520,380,.12,'square',.05); setTimeout(()=>dzwiek(480,340,.12,'square',.05),110);
+      for(let i=0;i<12;i++) parts.push({x:z.x+7,y:z.y+5,vx:rnd(-50,50),vy:rnd(-90,-10),z:rnd(.4,.8),c:i%3?'#fbf6ee':'#cfc6d6',g:120,r:1});
+      napisy.push({x:z.x-6,y:z.y-6,t:'gę!',z:.7});
+      continue;
+    }
     if(overlap({x:p.x+2,y:p.y+2,w:p.w-4,h:p.h-3}, {x:z.x+1,y:z.y+2,w:z.w-2,h:z.h-2})){ smierc(); return; }
   }
   if(p.y>H+10){ smierc(); return; }
@@ -469,8 +523,24 @@ function krok(dt){
   if(Math.floor((p.x-40)/10)!==ostatnieM) aktualizujHud();
   while(genX<camX+W+200) generuj();
   const lewo=camX-60;
-  solids=solids.filter(s=>s.x+s.w>lewo); hazards=hazards.filter(s=>s.x+s.w>lewo);
+  solids=solids.filter(s=>s.x+s.w>lewo); hazards=hazards.filter(s=>s.x+s.w>lewo && s.y>-30);
   mice=mice.filter(m=>m.x>lewo && m.st!=='zlapana' && !(m.st==='ucieka'&&m.t>.8));
+}
+
+function ruchZwierza(z,dt){
+  z.t+=dt;
+  if(z.k==='ges'){
+    if(z.st==='leci'){ z.x+=z.vx*dt; z.y-=70*dt; return; }
+    if(z.st==='idzie' && stan==='gra' && z.x-P.x<70 && z.x>P.x){   // kot blisko — gęś syczy i szarżuje
+      z.st='szarza'; z.vx=-42; napisy.push({x:z.x-4,y:z.y-6,t:'sss!',z:.6}); dzwiek(3000,1800,.18,'sawtooth',.02);
+    }
+    z.x+=z.vx*dt;
+    if(z.x<z.minX){ z.x=z.minX; z.vx=Math.abs(z.vx); }
+    if(z.x>z.maxX){ z.x=z.maxX; z.vx=-Math.abs(z.vx); }
+  } else if(z.k==='wrona'){
+    if(!z.aktywna){ if(stan==='gra' && z.x-camX<W+4){ z.aktywna=true; dzwiek(760,420,.14,'sawtooth',.03); } else return; }
+    z.x+=z.vx*dt; z.y=z.y0+1.5*Math.sin(z.t*6);
+  }
 }
 
 function ruchMyszy(m,dt){
@@ -535,12 +605,47 @@ function rysujSolid(s,x){
     ctx.fillStyle='#5e3a22'; for(let xx=x+9; xx<x+s.w-2; xx+=10) ctx.fillRect(xx,y+1,1,2);
     ctx.fillStyle='#3a3048'; ctx.fillRect(x+3,y+5,2,3); ctx.fillRect(x+s.w-5,y+5,2,3);
   } else if(s.k==='kosz'){
-    // bela siana
-    ctx.fillStyle='#d9ac45'; ctx.fillRect(x,y+1,s.w,s.h-1); ctx.fillRect(x+1,y,s.w-2,1);
-    ctx.fillStyle='#b88d2f'; for(let yy=y+3;yy<y+s.h;yy+=3) ctx.fillRect(x+1,yy,s.w-2,1);
-    ctx.fillStyle='#f0d27a'; ctx.fillRect(x+1,y,s.w-2,1); ctx.fillRect(x,y+1,1,s.h-2);
-    ctx.fillStyle='#8a6a2f'; ctx.fillRect(x+s.w-1,y+1,1,s.h-1); ctx.fillRect(x+3,y,1,s.h); ctx.fillRect(x+7,y,1,s.h);
+    for(let yy=y; yy<y+s.h; yy+=14) bela(x,yy,s.w,14);   // bela siana (w stogu kilka jedna na drugiej)
+  } else if(s.k==='kloda'){
+    const yy=Math.round(y);
+    ctx.fillStyle='#5e3a22'; ctx.fillRect(x,yy,s.w,s.h);
+    ctx.fillStyle='#7a4f2e'; ctx.fillRect(x,yy+1,s.w,2);
+    ctx.fillStyle='#a0683c'; ctx.fillRect(x+1,yy,s.w-2,1);
+    ctx.fillStyle='#4a2c18'; for(let xx=x+5; xx<x+s.w-4; xx+=7) ctx.fillRect(xx,yy+2,3,1);
+    ctx.fillStyle='#c98a52'; ctx.fillRect(x+s.w-3,yy,3,s.h); ctx.fillStyle='#8a5a34'; ctx.fillRect(x+s.w-2,yy+2,1,2);
+    ctx.fillStyle='#8fc3e8'; ctx.fillRect(x-2,GROUND+9,3,1); ctx.fillRect(x+s.w,GROUND+9,3,1);
+  } else if(s.k==='woz'){
+    // dyszel
+    ctx.fillStyle='#5e3a22';
+    for(let i=0;i<12;i++) ctx.fillRect(x-12+i,GROUND-4-Math.floor(i*(s.h-18)/12),1,2);
+    // skrzynia wozu
+    ctx.fillStyle='#8a5a34'; ctx.fillRect(x,y+9,s.w,7);
+    ctx.fillStyle='#6e4526'; for(let xx=x+5;xx<x+s.w-2;xx+=7) ctx.fillRect(xx,y+9,1,7);
+    ctx.fillStyle='#b07a48'; ctx.fillRect(x,y+9,s.w,1);
+    ctx.fillStyle='#3a2420'; ctx.fillRect(x,y+16,s.w,1);
+    // siano na wozie
+    ctx.fillStyle='#d9ac45'; ctx.fillRect(x+1,y+1,s.w-2,8); ctx.fillRect(x+3,y,s.w-6,1);
+    ctx.fillStyle='#b88d2f'; for(let xx=0;xx<s.w-2;xx+=2) ctx.fillRect(x+1+xx,y+3+(hash(xx+s.w)%5),1,2);
+    ctx.fillStyle='#f0d27a'; ctx.fillRect(x+3,y,s.w-6,1);
+    ctx.fillStyle='#f0d27a'; ctx.fillRect(x,y+2,1,1); ctx.fillRect(x+s.w-1,y+4,1,1);
+    // koła
+    for(const kx0 of [x+9, x+s.w-9]) kolo(kx0, GROUND-6, 6);
   }
+}
+function bela(x,y,w,h){
+  ctx.fillStyle='#d9ac45'; ctx.fillRect(x,y+1,w,h-1); ctx.fillRect(x+1,y,w-2,1);
+  ctx.fillStyle='#b88d2f'; for(let yy=y+3;yy<y+h;yy+=3) ctx.fillRect(x+1,yy,w-2,1);
+  ctx.fillStyle='#f0d27a'; ctx.fillRect(x+1,y,w-2,1); ctx.fillRect(x,y+1,1,h-2);
+  ctx.fillStyle='#8a6a2f'; ctx.fillRect(x+w-1,y+1,1,h-1); ctx.fillRect(x+3,y,1,h); ctx.fillRect(x+7,y,1,h);
+}
+function kolo(cx,cy,r){
+  for(let dy=-r;dy<=r;dy++){
+    const hw=Math.round(Math.sqrt(r*r-dy*dy)), hi=Math.round(Math.sqrt(Math.max(0,(r-2)**2-dy*dy)));
+    ctx.fillStyle='#3a2420'; ctx.fillRect(cx-hw,cy+dy,hw*2+1,1);
+    if(Math.abs(dy)<=r-2){ ctx.fillStyle='#8a5a34'; ctx.fillRect(cx-hi+1,cy+dy,Math.max(0,hi*2-1),1); }
+  }
+  ctx.fillStyle='#3a2420'; ctx.fillRect(cx-r+2,cy,r*2-3,1); ctx.fillRect(cx,cy-r+2,1,r*2-3);
+  ctx.fillStyle='#c98a52'; ctx.fillRect(cx-1,cy-1,3,3);
 }
 
 function rysujPlot(z,x){
@@ -567,7 +672,16 @@ function rysuj(){
   const cx=Math.round(camX*S)/S;
   for(const s of solids){ const x=s.x-cx; if(x>W||x+s.w<0) continue; if(s.k==='ground') rysujSolid(s,x); }
   for(const s of solids){ const x=s.x-cx; if(x>W||x+s.w<0) continue; if(s.k!=='ground') rysujSolid(s,x); }
-  for(const z of hazards){ const x=z.x-cx; if(x>W||x+z.w<0) continue; rysujPlot(z,x); }
+  for(const z of hazards){
+    const x=z.x-cx; if(x>W+20||x+z.w<-20) continue;
+    if(z.k==='plot'){ rysujPlot(z,x); continue; }
+    const kl=z.k==='ges'?GES:WRONA, szyb=z.k==='ges'?(z.st==='idzie'?6:z.st==='szarza'?12:16):9;
+    const img=kl[Math.floor(z.t*szyb)%2], yy=Math.floor(z.y);
+    ctx.save();
+    if(z.vx>0){ ctx.translate(Math.floor(x)+z.w,0); ctx.scale(-1,1); ctx.drawImage(img,0,yy); }
+    else ctx.drawImage(img,Math.floor(x),yy);
+    ctx.restore();
+  }
   for(const m of mice){
     const x=m.x-cx; if(x>W+10||x<-12) continue;
     const img=MYSZ[Math.floor(m.t*8)%2];
