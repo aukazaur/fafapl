@@ -66,6 +66,22 @@ for entry in "${GAMES[@]}"; do
   sed -e "s|{{TITLE}}|$title|g" -e "s|{{EXTRA}}|$extra|" -e "s|{{VER}}|$VER|g" "$HERE/player.html" > "$SITE/games/$id/index.html"
 done
 
+# gry HTML (jeden plik, bez LÖVE): plik_w_Work|id
+# plik to strona bez <head> (tak jak artefakt Claude), więc doklejamy szkielet dokumentu
+HTML_GAMES=(
+  "zamieniacze.html|zamieniacze"
+)
+for entry in "${HTML_GAMES[@]}"; do
+  IFS='|' read -r file id <<< "$entry"
+  echo ">> $id (HTML)"
+  mkdir -p "$SITE/games/$id"
+  { echo '<!doctype html><html lang="pl"><head><meta charset="utf-8">'
+    echo '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
+    echo '<style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>'
+    cat "$WORK/$file"
+    echo '</body></html>'; } > "$SITE/games/$id/index.html"
+done
+
 cp "$HERE/index.html" "$HERE/touch.js" "$HERE/fafanet.js" "$SITE/"
 sed "s|{{VER}}|$VER|g" "$HERE/play.html" > "$SITE/play.html"
 cp -r "$HERE/thumbs" "$SITE/"
