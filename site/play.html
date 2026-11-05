@@ -48,14 +48,15 @@
       kronikiostatniegokrolestwa: 'Kroniki Ostatniego Królestwa',
       imperiumkaczek: 'Imperium Kaczek',
       zamieniacze: 'Zamieniacze',
-      kopacz_potworkow: 'Kopacz Potworków'
+      kopacz_potworkow: 'Kopacz Potworków',
+      kot_skarpetka: 'Kot Skarpetka'
     };
     var id = new URLSearchParams(location.search).get('gra');
     if (!TITLES[id]) location.replace('./');
     document.title = TITLES[id] + ' · FafaPl';
     document.getElementById('title').textContent = TITLES[id];
     var frame = document.getElementById('game');
-    frame.src = 'games/' + id + '/?v=1793891487';
+    frame.src = 'games/' + id + '/?v=1793893679';
     frame.addEventListener('load', function () { frame.focus(); });
 
     // licznik zagrań tej gry (abacus.jasoncameron.dev, pokazywany na kartach w index.html);
