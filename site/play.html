@@ -50,14 +50,15 @@
       zamieniacze: 'Zamieniacze',
       kopacz_potworkow: 'Kopacz Potworków',
       kot_skarpetka: 'Kot Skarpetka',
-      lowca_lewiatanow: 'Łowca Lewiatanów'
+      lowca_lewiatanow: 'Łowca Lewiatanów',
+      lochy_i_kostki: 'Lochy i Kostki'
     };
     var id = new URLSearchParams(location.search).get('gra');
     if (!TITLES[id]) location.replace('./');
     document.title = TITLES[id] + ' · FafaPl';
     document.getElementById('title').textContent = TITLES[id];
     var frame = document.getElementById('game');
-    frame.src = 'games/' + id + '/?v=1793966113';
+    frame.src = 'games/' + id + '/?v=1793983628';
     frame.addEventListener('load', function () { frame.focus(); });
 
     // licznik zagrań tej gry (abacus.jasoncameron.dev, pokazywany na kartach w index.html);
