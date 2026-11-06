@@ -41,7 +41,7 @@
       printErr: console.error.bind(console),
       locateFile: function (path) {
         if (/\.wasm$/.test(path)) return '../../engine/' + path;
-        return path === 'game.data' ? path + '?v=1793961863' : path;
+        return path === 'game.data' ? path + '?v=1793961896' : path;
       },
       setStatus: function (text) {
         if (text) { statusEl.textContent = text.indexOf('Exception') === 0 ? 'Błąd gry 😢' : 'Ładowanie…'; }
@@ -62,8 +62,8 @@
     };
     window.onerror = function () { statusEl.style.display = 'flex'; statusEl.textContent = 'Błąd gry 😢 — odśwież stronę'; };
   </script>
-  <script src="../../touch.js?v=1793961863"></script><script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script><script src="../../fafanet.js?v=1793961863"></script>
-  <script src="game.js?v=1793961863"></script>
+  <script src="../../touch.js?v=1793961896"></script><script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script><script src="../../fafanet.js?v=1793961896"></script>
+  <script src="game.js?v=1793961896"></script>
   <script async src="../../engine/love.js" onload="Love(Module)"></script>
 </body>
 </html>
