@@ -74,6 +74,7 @@ HTML_GAMES=(
   "kot-skarpetka.html|kot_skarpetka"
   "lowca-lewiatanow.html|lowca_lewiatanow"
   "lochy-i-kostki.html|lochy_i_kostki"
+  "podniebne-wyspy.html|podniebne_wyspy"
 )
 for entry in "${HTML_GAMES[@]}"; do
   IFS='|' read -r file id <<< "$entry"
