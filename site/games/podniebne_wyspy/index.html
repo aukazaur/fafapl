@@ -146,7 +146,7 @@ button.skin:disabled{background:#1a1f40;color:#7a809e}
   <div class="karta">
     <h2>Zadania</h2>
     <div id="misje"></div>
-    <p class="pomoc">Za wykonane zadania dostajesz kryształy. Na 300, 600, 900 i 1570 m stoją latarnie. Zapal je, a następnym razem zaczniesz lot od nich.</p>
+    <p class="pomoc">Za wykonane zadania dostajesz kryształy. Na 300, 600, 900, 1215 i 1570 m stoją latarnie. Zapal je, a następnym razem zaczniesz lot od nich.</p>
   </div>
 </div>
 
@@ -190,6 +190,7 @@ let save={best:0,gems:0,up:{skrzydla:0,buty:0,magnes:0,potrojny:0},loty:0,skin:'
 try{const s=JSON.parse(localStorage.getItem(KLUCZ));if(s){save=Object.assign(save,s);save.up=Object.assign({skrzydla:0,buty:0,magnes:0,potrojny:0},s.up||{})}}catch(e){}
 function zapisz(){try{localStorage.setItem(KLUCZ,JSON.stringify(save))}catch(e){}}
 if(!Array.isArray(save.skiny))save.skiny=['lotnik'];if(!Array.isArray(save.misje))save.misje=[];if(!save.misjePoz)save.misjePoz={};if(!save.bossy)save.bossy={};
+if(!save.lat2){if(save.latarnie>=4)save.latarnie=5;if(save.startZ===4)save.startZ=5;save.lat2=1}
 
 const UPG=[
   {id:'skrzydla',nazwa:'Skrzydła z liścia',opis:'Dłuższe szybowanie',koszt:[12,35,80,160]},
@@ -210,7 +211,7 @@ const SKINY=[
   {id:'feniks',nazwa:'Feniks',koszt:300,szal:['#ffb03a','#ff5a3a'],tun:'#a8282a',czap:'#ffd25e',lot:['#ffe066','#ff8a3a','#d8402a'],iskry:true},
 ];
 const skin=()=>SKINY.find(k=>k.id===save.skin)||SKINY[0];
-const LATARNIE=[300,600,900,1570];
+const LATARNIE=[300,600,900,1215,1570];
 const MISJE={
   krysztaly:{opis:n=>`Zbierz ${n} kryształów w jednym locie`,poz:[15,30,50,80,120,170]},
   wysokosc:{opis:n=>`Wznieś się o ${n} m w jednym locie`,poz:[100,200,350,500,750,1000]},
@@ -376,7 +377,7 @@ function nowyLot(){
   lotId++;lotTest=false;
   const L=save.up;
   save.startZ=clamp(save.startZ|0,0,save.latarnie|0);
-  startAlt=[0,300,600,900,1570][save.startZ];startY=START_Y-startAlt*8;
+  startAlt=[0,300,600,900,1215,1570][save.startZ];startY=START_Y-startAlt*8;
   P={x:W/2-3,y:startY-10,vx:0,vy:0,w:6,h:10,onG:null,coy:0,buf:0,face:1,stun:0,inv:0,anim:0,glide:0,gliding:false,glAnim:0,dead:false,
      jumpV:235*(1+.055*L.buty),maxJ:1+L.potrojny,maxGlide:.9+.45*L.skrzydla,magR:[0,16,28,40,54][L.magnes],szal:[],balon:0,tarcza:false,wiatr:false,bicz:0,biczCD:0,biczBox:null,biczLen:0,biczTraf:false,szalHP:3,szalMax:3,bezradny:false};
   P.jumps=P.maxJ;P.glide=P.maxGlide;
@@ -1416,7 +1417,7 @@ function sklep(){
     const sekret=k.boss==='tkacz'&&!ma,bn=k.boss?(sekret?'???':WSZYSCY_BOSSOWIE.find(b=>b.id===k.boss).nazwa):'';
     return`<button class="skin${zal?' wybrany':''}" data-s="${k.id}" ${!ma&&(k.boss||save.gems<k.koszt)?'disabled':''}>
       <span class="lalka" style="--cz:${k.czap};--sz:${k.szal[0]};--tu:${k.tun}"></span><b>${sekret?'???':k.nazwa}</b><small>${zal?'Założony':ma?'Załóż':k.boss?'Pokonaj: '+bn:'◆ '+k.koszt}</small></button>`}).join('');
-  const ZN=['Łąki · 0 m','Jesień · 300 m','Śnieg · 600 m','Zorza · 900 m','Równiny · 1570 m'];
+  const ZN=['Łąki · 0 m','Jesień · 300 m','Śnieg · 600 m','Zorza · 900 m','Po Duchu · 1215 m','Równiny · 1570 m'];
   $('startZ').innerHTML=ZN.map((n,i)=>`<button data-z="${i}" class="${i===save.startZ?'wybrany':'drugi'}" ${i>save.latarnie?'disabled':''}>${n}</button>`).join('');
   $('misje').innerHTML=htmlMisji(save.misje);
 }
